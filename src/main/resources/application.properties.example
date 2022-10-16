@@ -1,0 +1,9 @@
+my-trust-store-file=/truststore.jks
+my-trust-store-password=password
+
+smart-id-relying-party-uuid=
+smart-id-relying-party-name=
+smart-id-host-url=https://sid.demo.sk.ee/smart-id-rp/v2
+
+aws-user-pool-client-id=
+aws-user-pool-client-secret=
