@@ -1,9 +1,15 @@
-my-trust-store-file=/truststore.jks
-my-trust-store-password=password
+# Global settings
+global.store-file=/truststore.jks
+global.store-password=password
 
-smart-id-relying-party-uuid=
-smart-id-relying-party-name=
-smart-id-host-url=https://sid.demo.sk.ee/smart-id-rp/v2
+# Smart ID settings
+smart-id.relying-party-uuid=11111111-0000-0000-0000-000000000000
+smart-id.relying-party-name=DEMO POC
+smart-id.host-url=https://sid.demo.sk.ee/smart-id-rp/v2
 
-aws-user-pool-client-id=
-aws-user-pool-client-secret=
+# AWS Cognito settings
+cognito.access-key-id=
+cognito.secret-access-key=
+cognito.user-pool-id=
+cognito.user-pool-client-id=
+cognito.user-pool-client-secret=
