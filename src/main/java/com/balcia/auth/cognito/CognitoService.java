@@ -1,23 +1,18 @@
 package com.balcia.auth.cognito;
 
-import com.balcia.auth.RegisterRequest;
+import com.balcia.auth.*;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient;
-import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminGetUserRequest;
-import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminGetUserResponse;
-import software.amazon.awssdk.services.cognitoidentityprovider.model.AttributeType;
-import software.amazon.awssdk.services.cognitoidentityprovider.model.SignUpRequest;
+import software.amazon.awssdk.services.cognitoidentityprovider.model.*;
 
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Base64;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @ApplicationScoped
 public class CognitoService {
@@ -36,6 +31,50 @@ public class CognitoService {
         this.cognitoConfiguration = cognitoConfiguration;
     }
 
+    public ConfirmSignUpResponse confirm(ConfirmRequest confirmRequest) {
+        ConfirmSignUpRequest confirmSignUpRequest = ConfirmSignUpRequest.builder()
+                .clientId(cognitoConfiguration.userPoolClientId())
+                .confirmationCode(confirmRequest.code)
+                .username(confirmRequest.email)
+                .build();
+
+        return identityProviderClient.confirmSignUp(confirmSignUpRequest);
+    }
+
+    public LoginResponse referesh(RefreshRequest refreshRequest) {
+        Map<String, String> authParameters = new HashMap<>();
+        authParameters.put("REFRESH_TOKEN", refreshRequest.refreshToken);
+
+        InitiateAuthRequest initiateAuthRequest = InitiateAuthRequest.builder()
+                .authFlow(AuthFlowType.REFRESH_TOKEN_AUTH)
+                .clientId(cognitoConfiguration.userPoolClientId())
+                .authParameters(authParameters)
+                .build();
+
+        InitiateAuthResponse initiateAuthResponse = identityProviderClient.initiateAuth(initiateAuthRequest);
+        LoginResponse loginResponse = new LoginResponse(initiateAuthResponse.authenticationResult());
+
+        return loginResponse;
+    }
+
+    public LoginResponse login(LoginRequest loginRequest) {
+
+        Map<String, String> authParameters = new HashMap<>();
+        authParameters.put("USERNAME", loginRequest.userName);
+        authParameters.put("PASSWORD", loginRequest.password);
+
+        InitiateAuthRequest initiateAuthRequest = InitiateAuthRequest.builder()
+                .authFlow(AuthFlowType.USER_PASSWORD_AUTH)
+                .clientId(cognitoConfiguration.userPoolClientId())
+                .authParameters(authParameters)
+                .build();
+
+        InitiateAuthResponse initiateAuthResponse = identityProviderClient.initiateAuth(initiateAuthRequest);
+        LoginResponse loginResponse = new LoginResponse(initiateAuthResponse.authenticationResult());
+
+        return loginResponse;
+    }
+
     public AdminGetUserResponse register(RegisterRequest registerRequest) {
         List<AttributeType> userAttrsList = new ArrayList<>();
 
@@ -51,7 +90,6 @@ public class CognitoService {
 
         SignUpRequest request = SignUpRequest.builder()
                 .clientId(cognitoConfiguration.userPoolClientId())
-                .secretHash(calculateSecretHash(cognitoConfiguration.userPoolClientId(), cognitoConfiguration.userPoolClientSecret(), registerRequest.email))
                 .username(registerRequest.email)
                 .password(registerRequest.password)
                 .userAttributes(userAttrsList)
@@ -63,22 +101,5 @@ public class CognitoService {
                 .userPoolId(cognitoConfiguration.userPoolId())
                 .username(registerRequest.email)
                 .build());
-    }
-
-    private String calculateSecretHash(String userPoolClientId, String userPoolClientSecret, String userName) {
-        final String HMAC_SHA256_ALGORITHM = "HmacSHA256";
-
-        SecretKeySpec signingKey = new SecretKeySpec(
-                userPoolClientSecret.getBytes(StandardCharsets.UTF_8),
-                HMAC_SHA256_ALGORITHM);
-        try {
-            Mac mac = Mac.getInstance(HMAC_SHA256_ALGORITHM);
-            mac.init(signingKey);
-            mac.update(userName.getBytes(StandardCharsets.UTF_8));
-            byte[] rawHmac = mac.doFinal(userPoolClientId.getBytes(StandardCharsets.UTF_8));
-            return Base64.getEncoder().encodeToString(rawHmac);
-        } catch (Exception e) {
-            throw new RuntimeException("Error while calculating ");
-        }
     }
 }
