@@ -24,11 +24,20 @@ public class CognitoService {
     @Inject
     public CognitoService(CognitoConfiguration cognitoConfiguration) {
         identityProviderClient = CognitoIdentityProviderClient.builder()
-                .region(Region.EU_CENTRAL_1)
+                .region(Region.of(cognitoConfiguration.region()))
                 .credentialsProvider(StaticCredentialsProvider
                         .create(AwsBasicCredentials.create(cognitoConfiguration.accessKeyId(), cognitoConfiguration.secretAccessKey())))
                 .build();
         this.cognitoConfiguration = cognitoConfiguration;
+    }
+
+    public String requestConfirmEmail(ResendRequest resendRequest) {
+        ResendConfirmationCodeRequest resendConfirmationCodeRequest = ResendConfirmationCodeRequest.builder()
+                .clientId(cognitoConfiguration.userPoolClientId())
+                .username(resendRequest.email)
+                .build();
+        identityProviderClient.resendConfirmationCode(resendConfirmationCodeRequest);
+        return "OK";
     }
 
     public ConfirmSignUpResponse confirm(ConfirmRequest confirmRequest) {
@@ -86,6 +95,16 @@ public class CognitoService {
         userAttrsList.add(AttributeType.builder()
                 .name("custom:registry_code")
                 .value(registerRequest.rc)
+                .build());
+
+        userAttrsList.add(AttributeType.builder()
+                .name("custom:base64_hash")
+                .value(registerRequest.hashInBase64)
+                .build());
+
+        userAttrsList.add(AttributeType.builder()
+                .name("custom:hash_type")
+                .value(registerRequest.hashType)
                 .build());
 
         SignUpRequest request = SignUpRequest.builder()

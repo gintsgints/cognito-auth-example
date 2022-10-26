@@ -6,6 +6,18 @@ If you want to learn more about Quarkus, please visit its website: https://quark
 
 ## Running the application in dev mode
 
+
+### Prepeare environment
+
+To be able to run app, environment should be configured in application.properties file.
+To see what values are needed you can use file application.properties.example file
+copy that file with new name and put required values in.
+At least values for cognito should be filled in.
+
+Also make sure you have recent https certificates in truststore.jks file.
+
+### Develop run
+
 You can run your application in dev mode that enables live coding using:
 ```shell script
 ./mvnw compile quarkus:dev

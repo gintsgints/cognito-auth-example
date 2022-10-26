@@ -28,6 +28,12 @@ public class AuthResource {
     }
 
     @POST
+    @Path("/requestconfirmemail")
+    public Response requestConfirmEmail(ResendRequest resendRequest) {
+        return Response.ok(cognitoService.requestConfirmEmail(resendRequest)).build();
+    }
+
+    @POST
     @Path("/confirm")
     public Response confirm(ConfirmRequest confirmRequest) {
         return Response.ok(cognitoService.confirm(confirmRequest)).build();
@@ -53,7 +59,8 @@ public class AuthResource {
         System.setProperty("javax.net.ssl.trustStore", getClass().getResource(globalConfiguration.storeFile()).getPath());
         System.setProperty("javax.net.ssl.trustStorePassword", globalConfiguration.storePassword());
 
-        smartIdService.register(registerRequest);
+//        uncomment this if you want to test smartid here
+//        smartIdService.register(registerRequest);
         return Response.ok(cognitoService.register(registerRequest)).build();
     }
 }

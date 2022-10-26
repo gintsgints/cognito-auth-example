@@ -8,6 +8,7 @@ smart-id.relying-party-name=DEMO POC
 smart-id.host-url=https://sid.demo.sk.ee/smart-id-rp/v2
 
 # AWS Cognito settings
+cognito.region=
 cognito.access-key-id=
 cognito.secret-access-key=
 cognito.user-pool-id=

@@ -6,6 +6,7 @@ import java.util.Optional;
 
 @ConfigMapping(prefix = "cognito")
 interface CognitoConfiguration {
+    String region();
     String accessKeyId();
     String secretAccessKey();
     String userPoolId();
